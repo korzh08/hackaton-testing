@@ -1,0 +1,14 @@
+apiVersion: v2
+name: demo-api
+description: Production-grade Helm chart for MTS Cloud DevOps demo microservice with Canary deployment and RED observability
+type: application
+version: 1.0.0
+appVersion: "v1.0.0"
+keywords:
+  - devops
+  - canary
+  - prometheus
+  - fast-api
+  - mts-cloud
+maintainers:
+  - name: MTS DevOps Team

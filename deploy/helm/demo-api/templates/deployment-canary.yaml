@@ -1,0 +1,75 @@
+{{- if .Values.canary.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "demo-api.fullname" . }}-canary
+  labels:
+    {{- include "demo-api.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-canary
+    track: canary
+spec:
+  replicas: {{ .Values.canary.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "demo-api.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      track: canary
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "demo-api.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        track: canary
+      annotations:
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.canary.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: APP_VERSION
+              value: "{{ .Values.canary.image.tag }}"
+            - name: APP_ENV
+              value: "{{ .Values.env.APP_ENV }}"
+            - name: FAULT_MODE
+              value: "{{ .Values.canary.faultMode }}"
+            - name: FAULT_ERROR_RATE
+              value: "{{ .Values.canary.faultErrorRate }}"
+            - name: API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: API_TOKEN
+                  optional: true
+            - name: API_TOKEN_PREVIOUS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: API_TOKEN_PREVIOUS
+                  optional: true
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+{{- end }}

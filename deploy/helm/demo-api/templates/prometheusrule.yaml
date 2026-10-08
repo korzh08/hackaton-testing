@@ -1,0 +1,53 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "demo-api.fullname" . }}-alerts
+  labels:
+    {{- include "demo-api.labels" . | nindent 4 }}
+    release: prometheus
+spec:
+  groups:
+    - name: demo-api-slo-alerts
+      rules:
+        - alert: DemoApiDown
+          expr: sum(up{pod=~".*demo-api.*"}) == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: demo-api
+          annotations:
+            summary: "All Demo API instances are down"
+            description: "No demo-api pods have been reporting healthy for > 1 minute."
+
+        - alert: DemoApiHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{status=~"5.."}[2m]))
+            /
+            sum(rate(http_requests_total[2m])) > 0.05
+          for: 1m
+          labels:
+            severity: critical
+            service: demo-api
+          annotations:
+            summary: "Demo API 5xx error rate exceeds 5%"
+            description: 'HTTP 5xx error rate is currently {{ `{{ $value | humanizePercentage }}` }}, which violates the SLO.'
+
+        - alert: DemoApiHighLatencyP95
+          expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+          for: 2m
+          labels:
+            severity: warning
+            service: demo-api
+          annotations:
+            summary: "Demo API p95 latency exceeds 500ms"
+            description: '95th percentile latency is {{ `{{ $value }}` }}s, exceeding the 500ms target.'
+
+        - alert: DemoApiRolloutDegraded
+          expr: sum(rate(http_requests_total{status=~"5..",track="canary"}[1m])) > 0
+          for: 30s
+          labels:
+            severity: warning
+            service: demo-api
+          annotations:
+            summary: "Canary track is producing 5xx errors"
+            description: "Canary rollout has started failing requests, triggering automated rollback evaluation."

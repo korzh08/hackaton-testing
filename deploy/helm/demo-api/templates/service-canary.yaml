@@ -1,0 +1,20 @@
+{{- if .Values.canary.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "demo-api.fullname" . }}-canary
+  labels:
+    {{- include "demo-api.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service-canary
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "demo-api.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    track: canary
+{{- end }}

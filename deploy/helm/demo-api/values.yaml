@@ -1,0 +1,83 @@
+replicaCount: 2
+
+image:
+  repository: demo-api
+  pullPolicy: IfNotPresent
+  tag: "v1.0.0"
+
+serviceAccount:
+  create: false
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8000"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  host: "demo.local"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+
+canary:
+  enabled: false
+  weight: 20
+  image:
+    tag: "v2.0.0"
+  replicaCount: 1
+  faultMode: "normal"
+  faultErrorRate: "0.0"
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+
+loadgen:
+  enabled: true
+  ratePerSecond: 10
+
+env:
+  APP_ENV: "production"
+  FAULT_MODE: "normal"
+  FAULT_ERROR_RATE: "0.0"
+
+secretName: "demo-api-secret"

@@ -1,0 +1,9 @@
+# Broken Canary deployment values (injected 500 errors to trigger automatic rollback)
+canary:
+  enabled: true
+  weight: 20
+  image:
+    tag: "v2.0.0-broken"
+  replicaCount: 1
+  faultMode: "error500"
+  faultErrorRate: "0.8"

@@ -1,0 +1,9 @@
+# Canary deployment values (20% traffic split)
+canary:
+  enabled: true
+  weight: 20
+  image:
+    tag: "v2.0.0"
+  replicaCount: 1
+  faultMode: "normal"
+  faultErrorRate: "0.0"
