@@ -9,3 +9,4 @@ htmlcov/
 .env
 *.mp4
 bin/
+test_clean_env/
