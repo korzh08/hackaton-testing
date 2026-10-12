@@ -40,6 +40,8 @@ rm -f "${TMP_DEC}"
 if kubectl cluster-info &>/dev/null; then
   sops -d "${ENC_SECRET}" | kubectl apply -n demo -f -
   kubectl rollout restart deployment -n demo -l app.kubernetes.io/name=demo-api
+  echo "[rotate] Waiting for rollout to complete..."
+  kubectl rollout status deployment -n demo -l app.kubernetes.io/name=demo-api --timeout=60s || true
 fi
 
 echo "=========================================================="

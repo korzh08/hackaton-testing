@@ -1,5 +1,6 @@
 import asyncio
 import os
+import secrets
 import socket
 import sys
 import time
@@ -76,10 +77,10 @@ def verify_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     token = credentials.credentials
-    # Dual-token verification for zero-downtime rotation
-    if token == API_TOKEN:
+    # Dual-token verification for zero-downtime rotation with constant-time comparison
+    if secrets.compare_digest(token, API_TOKEN):
         return "current"
-    if API_TOKEN_PREVIOUS and token == API_TOKEN_PREVIOUS:
+    if API_TOKEN_PREVIOUS and secrets.compare_digest(token, API_TOKEN_PREVIOUS):
         return "previous"
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -186,25 +187,37 @@ def get_items(auth_status: str = Depends(verify_token)):
     }
 
 
+items_lock = asyncio.Lock()
+
+
 @app.post("/api/v1/items", tags=["Items"], status_code=status.HTTP_201_CREATED)
-def create_item(item: ItemCreate, auth_status: str = Depends(verify_token)):
-    """Creates a new item (Protected with Bearer token)."""
-    new_id = str(len(ITEMS_DB) + 1)
-    new_item = {"id": new_id, "name": item.name, "category": item.category or "general"}
-    ITEMS_DB.append(new_item)
+async def create_item(item: ItemCreate, auth_status: str = Depends(verify_token)):
+    """Creates a new item (Protected with Bearer token, thread-safe with lock)."""
+    async with items_lock:
+        new_id = str(len(ITEMS_DB) + 1)
+        new_item = {"id": new_id, "name": item.name, "category": item.category or "general"}
+        ITEMS_DB.append(new_item)
     return {"created": new_item, "auth_token_type": auth_status}
 
 
 @app.post("/api/v1/fault", tags=["Testing"])
-def inject_fault(mode: str = "normal", error_rate: float = 0.5):
-    """Dynamically configure fault injection for testing Canary rollback and AIOps."""
+def inject_fault(
+    mode: str = "normal",
+    error_rate: float = 0.5,
+    auth_status: str = Depends(verify_token),
+):
+    """Dynamically configure fault injection for testing Canary rollback and AIOps (Protected)."""
     global FAULT_MODE, FAULT_ERROR_RATE
     FAULT_MODE = mode
     FAULT_ERROR_RATE = error_rate
     if mode == "crash":
         # Simulates fatal crash loop for SRE RCA diagnostics
         sys.exit(1)
-    return {"fault_mode": FAULT_MODE, "fault_error_rate": FAULT_ERROR_RATE}
+    return {
+        "fault_mode": FAULT_MODE,
+        "fault_error_rate": FAULT_ERROR_RATE,
+        "auth_token_type": auth_status,
+    }
 
 
 if __name__ == "__main__":

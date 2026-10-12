@@ -8,9 +8,22 @@ export PATH="${ROOT_DIR}/bin:${PATH}"
 STATE_DIR="${ROOT_DIR}/.state"
 mkdir -p "${STATE_DIR}" "${ROOT_DIR}/bin"
 
+PROVIDER="${PROVIDER:-local}"
+
 echo "=========================================================================="
 echo "🚀 Cloud DevOps Pipeline: From Repository to Production-Kubernetes in 3 Commands"
 echo "=========================================================================="
+echo "[*] Selected Infrastructure Provider: ${PROVIDER}"
+
+if [[ "${PROVIDER}" == "openstack" ]]; then
+  echo "[infra] Initializing OpenStack MTS Cloud Infrastructure via Terraform..."
+  if command -v terraform &>/dev/null; then
+    (cd "${ROOT_DIR}/infra/terraform/openstack" && terraform init && terraform validate)
+  else
+    echo "[infra] Terraform CLI not detected on host. Skipping cloud provisioning."
+  fi
+fi
+
 echo "[*] Step 1/5: Verifying dependencies and static CLI tooling..."
 
 # Verify or download required binaries into ./bin/

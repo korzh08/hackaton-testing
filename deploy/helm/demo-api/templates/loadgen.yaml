@@ -24,9 +24,15 @@ spec:
             - -c
             - |
               echo "Starting background synthetic traffic generator (~10 RPS)...";
+              INGRESS_URL="http://ingress-nginx-controller.ingress-nginx.svc.cluster.local"
+              FALLBACK_URL="http://{{ include "demo-api.fullname" . }}-stable:{{ .Values.service.port }}"
               while true; do
-                curl -s -o /dev/null -w "%{http_code}\n" "http://{{ include "demo-api.fullname" . }}-stable:{{ .Values.service.port }}/api/v1/info" > /dev/null 2>&1 || true;
-                curl -s -o /dev/null -w "%{http_code}\n" "http://{{ include "demo-api.fullname" . }}-stable:{{ .Values.service.port }}/healthz" > /dev/null 2>&1 || true;
+                TARGET="${FALLBACK_URL}"
+                if nc -z -w 1 ingress-nginx-controller.ingress-nginx.svc.cluster.local 80 2>/dev/null; then
+                  TARGET="${INGRESS_URL}"
+                fi
+                curl -s -o /dev/null -H "Host: {{ .Values.ingress.host }}" "${TARGET}/api/v1/info" > /dev/null 2>&1 || true;
+                curl -s -o /dev/null -H "Host: {{ .Values.ingress.host }}" "${TARGET}/healthz" > /dev/null 2>&1 || true;
                 sleep 0.1;
               done
           resources:

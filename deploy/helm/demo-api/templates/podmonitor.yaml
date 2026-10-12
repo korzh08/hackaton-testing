@@ -9,6 +9,8 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "demo-api.name" . }}
+  podTargetLabels:
+    - track
   podMetricsEndpoints:
     - port: http
       path: /metrics

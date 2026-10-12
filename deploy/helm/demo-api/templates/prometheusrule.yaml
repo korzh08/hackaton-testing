@@ -10,7 +10,7 @@ spec:
     - name: demo-api-slo-alerts
       rules:
         - alert: DemoApiDown
-          expr: sum(up{pod=~".*demo-api.*"}) == 0
+          expr: sum(up{pod=~".*demo-api.*"}) == 0 or absent(up{pod=~".*demo-api.*"}) == 1
           for: 1m
           labels:
             severity: critical

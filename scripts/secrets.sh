@@ -17,10 +17,10 @@ fi
 export SOPS_AGE_KEY_FILE="${KEY_FILE}"
 PUBKEY=$(age-keygen -y "${KEY_FILE}")
 
-# Ensure encrypted secret exists
+# Ensure encrypted secret exists and is decryptable by current key
 ENC_SECRET="${ROOT_DIR}/secrets/app.enc.yaml"
-if [[ ! -f "${ENC_SECRET}" ]]; then
-  echo "[secrets] Encrypting template secrets/app.example.yaml -> secrets/app.enc.yaml..."
+if [[ ! -f "${ENC_SECRET}" ]] || ! sops -d "${ENC_SECRET}" &>/dev/null; then
+  echo "[secrets] Encrypting template secrets/app.example.yaml -> secrets/app.enc.yaml with current age key..."
   sops --encrypt --age "${PUBKEY}" --encrypted-regex '^(data|stringData)$' "${ROOT_DIR}/secrets/app.example.yaml" > "${ENC_SECRET}"
 fi
 

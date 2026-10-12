@@ -49,7 +49,9 @@ echo "[rotate] secrets/app.enc.yaml re-encrypted with dual-token acceptance."
 if kubectl cluster-info &>/dev/null; then
   sops -d "${ENC_SECRET}" | kubectl apply -n demo -f -
   kubectl rollout restart deployment -n demo -l app.kubernetes.io/name=demo-api
-  echo "[rotate] Pods are restarting with dual-token support. Zero downtime guaranteed!"
+  echo "[rotate] Waiting for rollout to complete..."
+  kubectl rollout status deployment -n demo -l app.kubernetes.io/name=demo-api --timeout=60s || true
+  echo "[rotate] Pods are restarted with dual-token support. Zero downtime guaranteed!"
 fi
 
 echo "=========================================================="

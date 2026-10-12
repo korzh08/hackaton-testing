@@ -81,10 +81,15 @@ def test_dual_token_rotation():
 
 
 def test_fault_injection_endpoint():
-    response = client.post("/api/v1/fault?mode=error500&error_rate=1.0")
+    # Unauthorized attempt must be rejected with 401
+    unauth_resp = client.post("/api/v1/fault?mode=error500&error_rate=1.0")
+    assert unauth_resp.status_code == 401
+
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    response = client.post("/api/v1/fault?mode=error500&error_rate=1.0", headers=headers)
     assert response.status_code == 200
     assert response.json()["fault_mode"] == "error500"
 
     # Reset to normal
-    response = client.post("/api/v1/fault?mode=normal&error_rate=0.0")
+    response = client.post("/api/v1/fault?mode=normal&error_rate=0.0", headers=headers)
     assert response.status_code == 200

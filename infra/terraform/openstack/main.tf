@@ -92,7 +92,7 @@ resource "openstack_compute_instance_v2" "k3s_node" {
   security_groups = [openstack_networking_secgroup_v2.k8s_secgroup.name]
 
   user_data = templatefile("${path.module}/../cloud-init/user-data.yaml", {
-    ssh_public_key = file(var.public_key_path)
+    ssh_public_key = file(pathexpand(var.public_key_path))
   })
 
   network {
