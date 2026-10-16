@@ -38,11 +38,10 @@ make up
 
 | Участник | Роль | Зона ответственности | Опыт и навыки |
 |---|---|---|---|
-| **Участник 1** | Team Lead / Cloud Architect | Архитектура конвейера, IaC (Terraform OpenStack), оркестрация (Makefile, scripts) | Linux, OpenStack, Terraform, Kubernetes |
-| **Участник 2** | DevOps / CI/CD Engineer | CI/CD (GitHub Actions), Docker multi-stage hardening, Helm Chart, Canary routing | Docker, GitHub Actions, Helm, Ingress-NGINX |
-| **Участник 3** | SRE / Observability Lead | Prometheus, Alertmanager, Grafana Dashboard-as-Code, синтетический генератор `loadgen` | PromQL, Grafana, Alerting, SRE Best Practices |
-| **Участник 4** | Backend & Security Engineer | FastAPI микросервис, pytest (>85%), SOPS + age, алгоритм dual-token ротации | Python, REST API, SOPS/age, Linux Security |
-| **Участник 5** | AI / MLOps Engineer | Разработка AIOps Copilot, промпт-инжиниринг, бенчмаркинг экономии времени | LLM APIs, Prompt Engineering, AIOps |
+| **Жуков Всеволод** | Team Lead / Cloud Architect | Архитектура конвейера, IaC (Terraform OpenStack), оркестрация (Makefile, scripts) | Linux, OpenStack, Terraform, Kubernetes |
+| **Дарья Симакова** | DevOps / CI/CD Engineer | CI/CD (GitHub Actions), Docker multi-stage hardening, Helm Chart, Canary routing | Docker, GitHub Actions, Helm, Ingress-NGINX |
+| **Александр Ческидов** | SRE / Observability Lead | Prometheus, Alertmanager, Grafana Dashboard-as-Code, синтетический генератор `loadgen` | PromQL, Grafana, Alerting, SRE Best Practices |
+| **Константин Бессонов** | Backend & Security Engineer | FastAPI микросервис, pytest (>85%), SOPS + age, алгоритм dual-token ротации | Python, REST API, SOPS/age, Linux Security |
 
 ---
 
