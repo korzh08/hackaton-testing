@@ -57,7 +57,7 @@ jobs:
           helm template demo-api deploy/helm/demo-api --values deploy/helm/demo-api/values.yaml --values deploy/helm/demo-api/values-canary.yaml > /dev/null
 
       - name: Run Trivy Config Scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: "config"
           hide-progress: true
@@ -84,7 +84,7 @@ jobs:
           tags: demo-api:test
 
       - name: Trivy Image Vulnerability Scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: "demo-api:test"
           format: "table"
